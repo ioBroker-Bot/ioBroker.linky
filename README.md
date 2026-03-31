@@ -12,7 +12,7 @@
 
 ## linky adapter for ioBroker
 
-Read data from Linky smart electricity meters
+Read data from Linky smart electricity meters, in fact any meter supporting the French Teleinfo protocol: https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf
 
 ## Changelog
 <!--
