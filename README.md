@@ -19,8 +19,7 @@ Read data from Linky smart electricity meters, in fact any meter supporting the 
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.0.2 (2026-03-31)
 * (Robin Rainton) initial release
 
 ## License
