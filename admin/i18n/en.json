@@ -1,5 +1,4 @@
 {
     "linky adapter settings": "Adapter settings for linky",
-    "option1": "option1",
-    "option2": "option2"
+    "serialPort": "Serial port device"
 }
