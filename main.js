@@ -11,8 +11,8 @@ const utils = require('@iobroker/adapter-core');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 
-const connectionTimeoutMs = 30 * 1000;
-const portRetryDelayMs = 5 * 1000;
+const connectionTimeoutMs = 15 * 1000;
+const portRetryDelayMs = 30 * 1000;
 
 // Types, units of TIC fields
 // TODO: add descriptions with translations
@@ -67,6 +67,7 @@ class Linky extends utils.Adapter {
         this.adco = null;
         this.connectionTimeout = null;
         this.portRetryTimer = null;
+        this.knownObjects = [];
     }
 
     // Set/reset connection
@@ -86,15 +87,39 @@ class Linky extends utils.Adapter {
         if (this.connectionTimeout) {
             this.clearTimeout(this.connectionTimeout);
         }
-        this.connectionTimeout = this.setTimeout(() => {
+        this.connectionTimeout = this.setTimeout(async () => {
             this.connectionTimeout = null;
             this.log.warn(`Connection timeout for ${this.adco}`);
             this.setConnected(false);
+            this.closePort(() => {
+                this.retryOpen();
+            });
         }, connectionTimeoutMs);
     }
 
+    closePort(callback) {
+        if (this.portRetryTimer) {
+            this.clearTimeout(this.portRetryTimer);
+            this.portRetryTimer = null;
+        }
+
+        if (this.port) {
+            this.port.close(error => {
+                if (error) {
+                    callback(error);
+                } else {
+                    this.log.info(`Closed serial port: ${this.config.serialPort}`);
+                    this.port = null;
+                    callback();
+                }
+            });
+        } else {
+            callback();
+        }
+    }
+
     retryOpen() {
-        this.log.debug(`Retrying port open ${this.config.serialPort} in ${portRetryDelayMs} ms`);
+        this.log.debug(`Retrying port open ${this.config.serialPort} in ${portRetryDelayMs}ms`);
         this.portRetryTimer = this.setTimeout(() => {
             this.portRetryTimer = null;
             this.openPort();
@@ -126,9 +151,54 @@ class Linky extends utils.Adapter {
         }
     }
 
-    async parsePort() {
+    async checkAndSetState(name, value) {
+        // Create channel for ADCO if we haven't done already.
+        if (!this.knownObjects.includes(this.adco)) {
+            this.log.debug(`Creating channel: ${this.adco}`);
+            try {
+                await this.setObjectNotExists(this.adco, {
+                    type: 'channel',
+                    common: {
+                        name: this.adco,
+                    },
+                    native: {},
+                });
+                this.knownObjects.push(this.adco);
+            } catch (error) {
+                this.log.error(`Failed to create channel for ${this.adco}: ${error.message}`);
+            }
+        }
+
+        const stateName = `${this.adco}.${name}`;
+        // Create state for value if we haven't done already.
+        if (!this.knownObjects.includes(stateName)) {
+            this.log.debug(`Creating state: ${stateName}`);
+            try {
+                await this.setObjectNotExists(stateName, {
+                    type: 'state',
+                    common: ticStateCommon[name],
+                    native: {},
+                    // TODO: other attributes?
+                });
+                this.knownObjects.push(stateName);
+            } catch (error) {
+                this.log.error(`Failed to create state for ${stateName}: ${error.message}`);
+            }
+        }
+
+        // Set state value only if it has changed.
+        try {
+            this.setStateChanged(stateName, {
+                ack: true,
+                val: ticStateCommon[name].type === 'number' ? Number(value) : value,
+            });
+        } catch (error) {
+            this.log.error(`Failed to set state value ${stateName} -> ${value}: ${error.message}`);
+        }
+    }
+
+    parsePort() {
         const parser = this.port.pipe(new ReadlineParser({ delimiter: '\n' }));
-        var nameValueCache = [];
         parser.on('data', async data => {
             // data is a string
             this.log.silly(data);
@@ -162,59 +232,23 @@ class Linky extends utils.Adapter {
                 if (ourChecksumInt != theirChecksumInt) {
                     this.log.warn(`Checksum error. Ours (${ourChecksumInt}) does not match ${theirChecksumInt})`);
                 } else {
-                    // TODO: Does the protocol cater for multiple ADCO values in the same stream?
-                    if (name === 'ADCO') {
+                    if (ticStateCommon[name] === undefined) {
+                        // We don't know what this field is so ignore it
+                        this.log.warn(`Unknown label (ignoring): ${name}`);
+                    } else if (name === 'ADCO') {
+                        // Store this as last ADCO seen which all following fields belong to.
                         if (this.adco !== value) {
+                            // Only log if changed.
                             this.adco = value;
-                            this.log.info(`Found ID '${this.adco}'`);
+                            this.log.info(`Found ADCO '${this.adco}'`);
                             this.setConnected(true);
                         }
                         // If we got ADCO, the connection must be alive, so reset the timer.
                         this.startConnectionTimer();
-                    }
-
-                    if (ticStateCommon[name] === undefined) {
-                        // We don't know what this field is so ignore it
-                        this.log.warn(`Unknown label (ignoring): ${name}`);
-                    } else if (nameValueCache[name] === value) {
-                        // Nothing has changed since the last time, do nothing
                     } else if (this.adco) {
-                        // Only create/set objects if the channel (adco) is known.
-                        try {
-                            await this.setObjectNotExists(this.adco, {
-                                type: 'channel',
-                                common: {
-                                    name: this.adco,
-                                },
-                                native: {},
-                            });
-                        } catch (error) {
-                            this.log.error(`Failed to create channel for ${this.adco}: ${error.message}`);
-                        }
-
-                        // Label known & new value so create channel/state set value
-                        nameValueCache[name] = value;
-                        const stateName = `${this.adco}.${name}`;
-
-                        try {
-                            this.setObjectNotExists(stateName, {
-                                type: 'state',
-                                common: ticStateCommon[name],
-                                native: {},
-                                // TODO: other attributes?
-                            });
-                        } catch (error) {
-                            this.log.error(`Failed to create state for ${stateName}: ${error.message}`);
-                        }
-
-                        try {
-                            this.setState(stateName, {
-                                ack: true,
-                                val: ticStateCommon[name].type === 'number' ? Number(value) : value,
-                            });
-                        } catch (error) {
-                            this.log.error(`Failed to set state value ${stateName} -> ${value}: ${error.message}`);
-                        }
+                        this.checkAndSetState(name, value);
+                    } else {
+                        this.log.warn(`Received ${name} ${value} but no ADCO known yet`);
                     }
                 }
             }
@@ -241,20 +275,7 @@ class Linky extends utils.Adapter {
      */
     onUnload(callback) {
         try {
-            if (this.portRetryTimer) {
-                this.clearTimeout(this.portRetryTimer);
-                this.portRetryTimer = null;
-            }
-            if (this.port) {
-                this.port.close(() => {
-                    this.log.info(`Closed serial port: ${this.config.serialPort}`);
-                    this.port = null;
-                    this.setConnected(false);
-                    callback();
-                });
-            } else {
-                callback();
-            }
+            this.closePort(callback);
         } catch (error) {
             this.log.error(`Error during unloading: ${error.message}`);
             callback();
