@@ -19,6 +19,10 @@ Read data from Linky smart electricity meters, in fact any meter supporting the 
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+ - (raintonr) Clean up states: read only, `value.power.consumption` has been replaced with `value.energy` & `value.power.reactive` added.
+
 ### 0.0.3 (2026-04-06)
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (raintonr) Added layout options
