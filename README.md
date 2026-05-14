@@ -22,7 +22,7 @@ Read data from Linky smart electricity meters, in fact any meter supporting the 
 
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22 now
- - (raintonr) Clean up states: read only, `value.power.consumption` has been replaced with `value.energy` & `value.power.reactive` added.
+- (raintonr) Clean up states: read only, `value.power.consumption` has been replaced with `value.energy` & `value.power.reactive` added.
 
 ### 0.0.3 (2026-04-06)
 - (copilot) Adapter requires admin >= 7.7.22 now
