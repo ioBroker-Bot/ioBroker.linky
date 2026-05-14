@@ -22,20 +22,20 @@ const ticStateCommon = {
     ADCO: { type: 'string' },
     OPTARIF: { type: 'string' },
     ISOUSC: { type: 'number', unit: 'A', role: 'value.current' },
-    BASE: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
+    BASE: { type: 'number', unit: 'Wh', role: 'value.energy' },
 
-    HCHC: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
-    HCHP: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
+    HCHC: { type: 'number', unit: 'Wh', role: 'value.energy' },
+    HCHP: { type: 'number', unit: 'Wh', role: 'value.energy' },
 
-    EJPHN: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
-    EJPHPM: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
+    EJPHN: { type: 'number', unit: 'Wh', role: 'value.energy' },
+    EJPHPM: { type: 'number', unit: 'Wh', role: 'value.energy' },
 
-    BBRHCJB: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
-    BBRHPJB: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
-    BBRHCJW: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
-    BBRHPJW: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
-    BBRHCJR: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
-    BBRHPJR: { type: 'number', unit: 'Wh', role: 'value.power.consumption' },
+    BBRHCJB: { type: 'number', unit: 'Wh', role: 'value.energy' },
+    BBRHPJB: { type: 'number', unit: 'Wh', role: 'value.energy' },
+    BBRHCJW: { type: 'number', unit: 'Wh', role: 'value.energy' },
+    BBRHPJW: { type: 'number', unit: 'Wh', role: 'value.energy' },
+    BBRHCJR: { type: 'number', unit: 'Wh', role: 'value.energy' },
+    BBRHPJR: { type: 'number', unit: 'Wh', role: 'value.energy' },
 
     PEJP: { type: 'number' /* In minutes */ },
 
@@ -46,7 +46,7 @@ const ticStateCommon = {
     ADPS: { type: 'number', unit: 'A', role: 'value.current' },
     IMAX: { type: 'number', unit: 'A', role: 'value.current' },
 
-    PAPP: { type: 'number', unit: 'VA' }, // TODO: no role for VA documented
+    PAPP: { type: 'number', unit: 'VA', role: 'value.power.reactive' },
 
     HHPHC: { type: 'string' },
     MOTDETAT: { type: 'string' },
@@ -179,7 +179,7 @@ class Linky extends utils.Adapter {
             try {
                 await this.setObjectNotExists(stateName, {
                     type: 'state',
-                    common: ticStateCommon[name],
+                    common: { read: true, write: false, ...ticStateCommon[name] },
                     native: {},
                     // TODO: other attributes?
                 });
