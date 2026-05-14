@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "linky",
-    "version": "0.0.3",
+    "version": "0.1.0",
     "news": {
+      "0.1.0": {
+        "en": "Adapter requires node.js >= 22 now\nClean up states: read only, `value.power.consumption` has been replaced with `value.energy` & `value.power.reactive` added.",
+        "de": "Adapter benötigt node.js >= 22 jetzt\nSaubere Zustände: nur lesen, `value.power.consumption` wurde durch `value.energy` & `value.power.reactive` hinzugefügt.",
+        "ru": "Адаптер требует node.js >= 22 сейчас\nОчистите состояния: читайте только, «стоимость.power.consumption» была заменена на «стоимость.energy» и «стоимость.power.reactive».",
+        "pt": "Adaptador requer nod.js >= 22 agora\nLimpar estados: somente leitura, `value.power.consumo` foi substituído por `value.energy` & `value.power.reactive` adicionado.",
+        "nl": "Voor de adapter zijn node.js < 22 nu nodig\nOpruimen toestanden: alleen lezen, \"value.power.consumption' is vervangen door \"value.energy.energy.energy.value.power.requentief' toegevoegd.",
+        "fr": "Adaptateur nécessite node.js >= 22 maintenant\nÉtats de nettoyage: lire seulement, `value.power.consumption` a été remplacé par `value.energy` et `value.power.reactive` ajouté.",
+        "it": "Adattatore richiede node.js >= 22 ora\nPulire gli stati: leggere solo, `value.power.consum` è stato sostituito con `value.energy` & `value.power.reactive` aggiunto.",
+        "es": "Adaptador requiere node.js ю= 22 ahora\nEstado de limpieza: sólo se ha sustituido la `valor.power.consumption` por `valor.energía ' & `valor.power.reactive`.",
+        "pl": "Adapter wymaga node.js > = 22\nWyłącznie \"value.power.consumption\" został zastąpiony przez \"value.energy\" i \"value.power.reaktywne\".",
+        "uk": "Адаптер вимагає node.js >= 22 тепер\nЧистий стан: читати тільки, `value.power.consumption` замінено на `value.energy` & `value.reactive` додано.",
+        "zh-cn": "适配器需要节点.js 现在22\n清理状态:仅读 \" value.power. conception \" 改为 \" value.energy \" 和 \" value.power.resactive \" ."
+      },
       "0.0.3": {
         "en": "Adapter requires admin >= 7.7.22 now\nAdded layout options",
         "de": "Adapter benötigt admin >= 7.7.22 jetzt\nLayoutoptionen hinzufügen",

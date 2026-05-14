@@ -19,8 +19,7 @@ Read data from Linky smart electricity meters, in fact any meter supporting the 
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.1.0 (2026-05-14)
 - (copilot) Adapter requires node.js >= 22 now
 - (raintonr) Clean up states: read only, `value.power.consumption` has been replaced with `value.energy` & `value.power.reactive` added.
 
